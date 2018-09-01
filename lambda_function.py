@@ -53,7 +53,10 @@ def lambda_handler(event, context):
         from dulwich import porcelain
         # os.chdir('/tmp')
         print(f"cloning {repo_name}...")
-        porcelain.clone(github_url, f'/tmp/{repo_name}')
+        try:
+            porcelain.clone(github_url, f'/tmp/{repo_name}')
+        except FileExistsError:
+            porcelain.pull(f'/tmp/{repo_name}', github_url)
         print(f"building {function} package")
         shell(f"bash {task_root}/build_package.sh {repo_name}")
 

@@ -30,11 +30,13 @@ sed -i '/^termcolor/d' requirements.txt
 sed -i '/^WebTest/d' requirements.txt
 echo "$(date) installing dependencies..."
 pip install -r requirements.txt
-deactivate
 echo "$(date) copying modules from virtualenv to build directory..."
+rm -rf /tmp/build
 mkdir -p /tmp/build
 shopt -s dotglob
-mv venv/lib/python3.*/site-packages/* /tmp/build/
+cd venv/lib/python3.*/site-packages
+cp -r . /tmp/build/
+cd ../../../../
 echo "$(date) removing unnecessary files..."
 find /tmp/build/ \( -name "*.pyc" -or -name "*.zip" \) -exec rm -rf {} \;
 echo "$(date) copying application files to build directory..."
@@ -45,3 +47,4 @@ elif [ -f lambda_function.py ]; then
 fi
 # zip -9qyr package.zip .
 # ls -hl /tmp/build
+deactivate
