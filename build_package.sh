@@ -6,7 +6,11 @@ cd "/tmp/${repo_name}"
 echo "$(date) creating virtualenv..."
 python3 -m venv venv
 source venv/bin/activate
+# separate editable packages
+mkdir -p venv/src
+grep '://' requirements.txt | cut -d' ' -f2 | xargs python git_clone.py
 # exclude vendored, testing, and documentation modules
+sed -i '/:\/\//d' requirements.txt
 sed -i '/^alabaster/d' requirements.txt
 sed -i '/^autodoc/d' requirements.txt
 sed -i '/^apilogs/d' requirements.txt
@@ -36,7 +40,13 @@ mkdir -p /tmp/build
 shopt -s dotglob
 cd venv/lib/python3.*/site-packages
 cp -r . /tmp/build/
-cd ../../../../
+cd "/tmp/${repo_name}"
+for i in $(find venv/src -type d -depth 1); do
+  if [ -f ${i}/setup.py ]; then
+    package=$(grep packages= ${i}/setup.py | cut -d\' -f2)
+    cp -r ${i}/${package} /tmp/build
+  fi
+done
 echo "$(date) removing unnecessary files..."
 find /tmp/build/ \( -name "*.pyc" -or -name "*.zip" \) -exec rm -rf {} \;
 echo "$(date) copying application files to build directory..."
