@@ -8,9 +8,11 @@ python3 -m venv venv
 source venv/bin/activate
 # separate editable packages
 mkdir -p venv/src
-grep '://' requirements.txt | cut -d' ' -f2 | xargs python git_clone.py
+rm -rf venv/src/*
+echo "$(date) downloading editable packages..."
+grep '^\-e' requirements.txt | cut -d' ' -f2 | xargs python "/var/task/git_clone.py"
 # exclude vendored, testing, and documentation modules
-sed -i '/:\/\//d' requirements.txt
+sed -i '/^-e/d' requirements.txt
 sed -i '/^alabaster/d' requirements.txt
 sed -i '/^autodoc/d' requirements.txt
 sed -i '/^apilogs/d' requirements.txt
