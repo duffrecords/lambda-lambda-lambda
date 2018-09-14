@@ -57,6 +57,22 @@ def lambda_handler(event, context):
             porcelain.clone(github_url, f'/tmp/{repo_name}')
         except FileExistsError:
             porcelain.pull(f'/tmp/{repo_name}', github_url)
+        print('checking for editable packages in requiremets.txt')
+        with open(f'/tmp/{repo_name}/requirements.txt') as f:
+            requirements = f.readlines()
+        editable = [r.strip('\n').split()[1] for r in requirements if r.startswith('-e')]
+        print(f"installing requirements")
+        shell(f"bash {task_root}/install_requirements.sh {repo_name}")
+        for repo_url in editable:
+            module_name = repo_url.split('/')[-1].split('@')[0]
+            if repo_url[0].split('/')[3] == username:
+                repo_url = repo_url.replace('://', f'://{token}:x-oauth-basic@')
+        src_dir = f'/tmp/{repo_name}/venv/src/{module_name}'
+        print(f"cloning {repo_url}...")
+        try:
+            porcelain.clone(repo_url, src_dir)
+        except FileExistsError:
+            porcelain.pull(src_dir, repo_url)
         print(f"building {function} package")
         shell(f"bash {task_root}/build_package.sh {repo_name}")
 
