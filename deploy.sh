@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FUNCTION="yo-dawg"
-FILES="build_package.sh install_requirements.txt lambda_function.py setup_git.sh"
+FILES="build_package.sh install_requirements.sh lambda_function.py setup_git.sh"
 
 AWS_PROFILE=$(grep aws_profile config.ini | sed 's/.* = //')
 AWS_REGION=$(grep aws_region config.ini | sed 's/.* = //')
