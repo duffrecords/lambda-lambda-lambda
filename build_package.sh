@@ -10,10 +10,12 @@ shopt -s dotglob
 cd venv/lib/python3.*/site-packages
 cp -r . /tmp/build/
 cd "/tmp/${repo_name}"
-for i in $(find venv/src -type d -depth 1); do
-  if [ -f ${i}/setup.py ]; then
-    package=$(grep packages= ${i}/setup.py | cut -d\' -f2)
-    cp -r ${i}/${package} /tmp/build
+for i in $(ls venv/src); do
+  if [ -d venv/src/${i} ]; then
+    if [ -f venv/src/${i}/setup.py ]; then
+      package=$(grep packages= venv/src/${i}/setup.py | cut -d\' -f2)
+      cp -r venv/src/${i}/${package} /tmp/build
+    fi
   fi
 done
 echo "$(date) removing unnecessary files..."

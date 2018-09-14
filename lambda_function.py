@@ -2,6 +2,7 @@
 
 import boto3
 import os
+import re
 import subprocess
 import zipfile
 
@@ -50,7 +51,7 @@ def lambda_handler(event, context):
         token = os.environ['git_token']
         github_url = f'https://{token}:x-oauth-basic@github.com/{username}/{repo_name}.git'
         # build and deploy function
-        from dulwich import porcelain
+        from dulwich import porcelain, index, repo
         # os.chdir('/tmp')
         print(f"cloning {repo_name}...")
         try:
@@ -64,19 +65,34 @@ def lambda_handler(event, context):
         print(f"installing requirements")
         shell(f"bash {task_root}/install_requirements.sh {repo_name}")
         for repo_url in editable:
+            match = re.match(r'\w+\+(\w+:\/\/[\w\.]+\/[\w\-]+\/[\w\-]+)(@[\w\-]+|)(#egg=.*|)', repo_url)
+            try:
+                repo_url = match.group(1).rstrip('.git') + '.git'
+            except IndexError:
+                pass
+            try:
+                branch = match.group(2).lstrip('@')
+            except IndexError:
+                branch = ''
+            try:
+                module_name = match.group(3).lstrip('#egg=').lower()
+            except IndexError:
+                module_name = ''
             print(repo_url)
-            module_name = repo_url.split('/')[-1].split('@')[0]
             try:
                 if repo_url.split('/')[3] == username:
                     repo_url = repo_url.replace('://', f'://{token}:x-oauth-basic@')
             except IndexError:
                 pass
-        src_dir = f'/tmp/{repo_name}/venv/src/{module_name}'
-        print(f"cloning {repo_url}...")
-        try:
-            porcelain.clone(repo_url, src_dir)
-        except FileExistsError:
-            porcelain.pull(src_dir, repo_url)
+            src_dir = f'/tmp/{repo_name}/venv/src/{module_name}'
+            print(f"cloning {repo_url}...")
+            try:
+                porcelain.clone(repo_url, src_dir)
+            except FileExistsError:
+                porcelain.pull(src_dir, repo_url)
+            if branch:
+                refspec = f'refs/heads/{branch}'.encode()
+                porcelain.pull(src_dir, repo_url, refspecs=[refspec])
         print(f"building {function} package")
         shell(f"bash {task_root}/build_package.sh {repo_name}")
 
