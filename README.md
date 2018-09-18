@@ -1,4 +1,4 @@
 # yo-dawg
-a Lambda function in your Lambda function so you can build and deploy Lambda functions while you run a Lambda function
+a Lambda function that can build and deploy other Lambda functions
 
 ![YO DAWG](meme.jpg)
