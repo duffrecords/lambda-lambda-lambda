@@ -14,5 +14,3 @@ mkdir -p build
 shopt -s dotglob
 mv venv/lib/python3.6/site-packages/* /tmp/build/
 cp /var/task/*.py /var/task/*.sh /tmp/build/
-# ls -hl /tmp/build/
-# zip -9qyr gitpython.zip .
