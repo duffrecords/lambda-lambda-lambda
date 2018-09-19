@@ -22,7 +22,7 @@ echo "$(date) removing unnecessary files..."
 find /tmp/build/ \( -name "*.pyc" -or -name "*.zip" \) -exec rm -rf {} \;
 echo "$(date) copying application files to build directory..."
 if [ -f make_dist.sh ]; then
-  bash make_dist.sh /tmp/build
+  bash -x make_dist.sh /tmp/build
 elif [ -f lambda_function.py ]; then
   cp lambda_function.py /tmp/build
 fi
