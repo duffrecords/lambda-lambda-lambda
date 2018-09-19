@@ -1,6 +1,6 @@
 #!/bin/bash
 
-FUNCTION="yo-dawg"
+FUNCTION="$(basename $( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd ))"
 FILES="build_package.sh install_requirements.sh lambda_function.py setup_git.sh"
 
 AWS_PROFILE=$(grep aws_profile config.ini | sed 's/.* = //')
