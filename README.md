@@ -13,12 +13,19 @@ At this point, you may be struck by the irony of maintaining a bunch of convolut
 
 ### Installation
 1. Copy config.ini.example to config.ini and add your AWS account info.
-1. Create a Lambda function for this project along with basic IAM privileges (Lambda, S3, CloudWatch).  I'll create a CloudFormation script to automate this step at some point.
-1. Run `deploy.sh` to upload this function to AWS Lambda.
-1. Using whatever method you prefer, invoke this function with the payload `{"action": "setup"}`.
-1. From your other Lambda projects:
-  1. Create a file called `make_dist.sh` and add any `mkdir` or `cp` commands required to copy deployable files to a staging directory, which will be the first script argument, i.e.```cp lambda_function.py "$1"```
-  1. Invoke the build/deploy Lambda function with a payload referencing the project to be built.  You can invoke it from the AWS CLI, a shell script, or even a test event within the AWS Lambda console--whatever is convenient.  The repo name is just the name of the project, not the full URL.  For example:
+2. Create a Lambda function for this project along with basic IAM privileges (Lambda, S3, CloudWatch).  I'll create a CloudFormation script to automate this step at some point.
+3. Run `deploy.sh` to upload this function to AWS Lambda.
+4. Using whatever method you prefer, invoke this function with the following payload:
+```json
+{
+    "action": "setup",
+    "function": "name-of-this-function"
+}
+```
+
+5. From your other Lambda projects:
+    1. Create a file called `make_dist.sh` and add any `mkdir` or `cp` commands required to copy deployable files to a staging directory, which will be the first script argument, i.e.```cp lambda_function.py "$1"```
+    2. Invoke the build/deploy Lambda function with a payload referencing the project to be built.  You can invoke it from the AWS CLI, a shell script, or even a test event within the AWS Lambda console--whatever is convenient.  The repo name is just the name of the project, not the full URL.  For example:
 ```json
 {
     "action": "build",
