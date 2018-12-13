@@ -58,6 +58,11 @@ def lambda_handler(event, context):
             porcelain.clone(github_url, f'/tmp/{repo_name}')
         except FileExistsError:
             porcelain.pull(f'/tmp/{repo_name}', github_url)
+        branch = event.get('branch', '')
+        if branch:
+            refspec = f'refs/heads/{branch}'.encode()
+            porcelain.pull(f'/tmp/{repo_name}', github_url, refspecs=[refspec])
+            branch = refspec = ''
         print('checking for editable packages in requirements.txt')
         with open(f'/tmp/{repo_name}/requirements.txt') as f:
             requirements = f.readlines()
