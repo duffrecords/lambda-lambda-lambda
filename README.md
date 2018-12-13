@@ -1,4 +1,4 @@
-# yo-dawg
+# lambda-lambda-lambda
 a Lambda function that can build and deploy other Lambda functions
 
 ![YO DAWG](meme.jpg)
