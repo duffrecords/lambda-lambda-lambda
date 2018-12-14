@@ -46,12 +46,12 @@ def lambda_handler(event, context):
             return {'status': 500, 'message': 'Failed to install Dulwich'}
 
     elif event['action'] == 'build':
+        from dulwich import porcelain
         repo_name = event['repo_name']
         username = os.environ['git_username']
         token = os.environ['git_token']
         github_url = f'https://{token}:x-oauth-basic@github.com/{username}/{repo_name}.git'
         # build and deploy function
-        from dulwich import porcelain, index, repo
         # os.chdir('/tmp')
         print(f"cloning {repo_name}...")
         try:
