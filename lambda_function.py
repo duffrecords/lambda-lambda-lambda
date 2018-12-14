@@ -40,7 +40,7 @@ def lambda_handler(event, context):
         # install Dulwich since git is not available in Lambda
         result = shell(
             f"bash {task_root}/setup_git.sh",
-            pattern='Successfully installed dulwich'
+            pattern='Successfully installed Dulwich'
         )
         if not result:
             return {'status': 500, 'message': 'Failed to install Dulwich'}

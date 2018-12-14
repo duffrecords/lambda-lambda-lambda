@@ -23,4 +23,7 @@ fi
 
 zip -9qyr package.zip $FILES
 aws s3api put-object --bucket $BUCKET --key "${FUNCTION}/package.zip" --body package.zip --server-side-encryption AES256
+if [[ "$1" == "init" ]]; then
+  exit 0
+fi
 aws --region $AWS_REGION lambda update-function-code --function-name $FUNCTION --s3-bucket $BUCKET --s3-key ${FUNCTION}/package.zip
