@@ -1,0 +1,37 @@
+{
+  "function": {
+    "runtimes": [
+      "python3.6"
+    ],
+    "files": [
+      "lambda_function.py",
+      "utils.py",
+      "data.yaml"
+    ]
+  },
+  "layers": {
+    "dependencies": [
+      "requirements.txt"
+    ],
+    "_sqlite3_so": {
+      "description": "SQLite shared object",
+      "runtimes": [
+        "python3.6",
+        "python3.7"
+      ],
+      "files": [
+        "_sqlite3.so"
+      ]
+    },
+    "nltk_punkt": {
+      "description": "NLTK Punkt sentence tokenizer",
+      "preinstall": [
+        "mkdir -p nltk_data",
+        "python -m nltk.downloader punkt -d nltk_data"
+      ],
+      "files": [
+        "nltk_data"
+      ]
+    }
+  }
+}

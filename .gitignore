@@ -1,4 +1,8 @@
+build_layer/
+build.json
+build.yaml
 config.ini
-package.zip
+*.zip
 *.pyc
+__pycache__
 
