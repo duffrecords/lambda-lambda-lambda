@@ -13,6 +13,7 @@ if [ ! -f "/tmp/${repo_name}/${requirements}" ]; then
 fi
 
 cd "/tmp/${repo_name}" || exit
+rm -rf venv
 echo "$(date) creating virtualenv..."
 echo "$(python --version)"
 python -m venv venv
