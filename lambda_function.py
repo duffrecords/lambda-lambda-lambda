@@ -139,8 +139,11 @@ def lambda_handler(event, context):
         components = ['all'] if len(args) == 1 else args[1:]
         repo_name = event['repo_name']
         username = os.environ['git_username']
-        token = os.environ['git_token']
-        github_url = f'https://{token}:x-oauth-basic@github.com/{username}/{repo_name}.git'
+        token = os.environ.get('git_token', '')
+        if token:
+            github_url = f'https://{token}:x-oauth-basic@github.com/{username}/{repo_name}.git'
+        else:
+            github_url = f'https://github.com/{username}/{repo_name}.git'
         print(f"cloning {repo_name}...")
         try:
             porcelain.clone(github_url, f'/tmp/{repo_name}')
@@ -184,7 +187,7 @@ def lambda_handler(event, context):
                         continue
                     print(repo_url)
                     try:
-                        if repo_url.split('/')[3] == username:
+                        if (repo_url.split('/')[3] == username) and token:
                             repo_url = repo_url.replace('://', f'://{token}:x-oauth-basic@')
                     except IndexError:
                         pass
