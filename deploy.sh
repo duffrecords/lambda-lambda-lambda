@@ -110,9 +110,15 @@ if [[ "$PROMPT" == "true" ]]; then
 fi
 
 # check for jq, which is not installed by default
-if which -s jq; then
+if which jq > /dev/null 2>&1; then
     JQ="$(which jq) -r .'LogResult'"
-    B64="$(which base64) -D"
+    kernel="$(uname -s)"
+    if [[ "$kernel" == "Linux" ]]; then
+        d="-d"
+    elif [[ "$kernel" == "Darwin" ]]; then
+        d="-D"
+    fi
+    B64="$(which base64) $d"
 else
     echo "In order to parse and decode the log output, you need to install the 'jq' and 'base64' utilities."
     JQ=$(which tee)
