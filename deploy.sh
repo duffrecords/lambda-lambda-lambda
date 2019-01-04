@@ -16,7 +16,7 @@ PROMPT=true
 TIME=
 
 usage() {
-    echo "Usage: $0 [ -b BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g REPO_NAME ] [ -p AWS PROFILE ] [ -r AWS_REGION ] [ -t ] [ -y ]" 1>&2
+    echo "Usage: $0 [ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -y ] [function|dependencieslayer]" 1>&2
 }
 
 exit_abnormal() {
@@ -25,7 +25,7 @@ exit_abnormal() {
 }
 
 # parse command line arguments
-args=`getopt b:c:f:g:l:p:r:ty $*`
+args=$(getopt b:c:f:g:l:p:r:ty $* > /dev/null 2>&1)
 [ $? -ne 0 ] && exit_abnormal
 eval set -- "$args"
 while true; do
@@ -55,27 +55,27 @@ done
 
 # override default parameters, using config file
 if [[ "$args" != *" -f"* ]]; then
-    TEMP="$(grep -i function_name $CONFIG_FILE | sed 's/.* = //')"
+    TEMP="$(grep -i FUNCTION_NAME $CONFIG_FILE | sed 's/.* = //')"
     [ ! -z "$TEMP" ] && FUNCTION="$TEMP"
 fi
 if [[ "$args" != *" -g"* ]]; then
-    TEMP="$(grep -i git_repo $CONFIG_FILE | sed 's/.* = //')"
+    TEMP="$(grep -i GIT_REPO $CONFIG_FILE | sed 's/.* = //')"
     [ ! -z "$TEMP" ] && REPO="$TEMP"
 fi
 if [[ "$args" != *" -b"* ]]; then
-    TEMP="$(grep -i git_branch $CONFIG_FILE | sed 's/.* = //')"
+    TEMP="$(grep -i GIT_BRANCH $CONFIG_FILE | sed 's/.* = //')"
     [ ! -z "$TEMP" ] && BRANCH="$TEMP"
 fi
 if [[ "$args" != *" -l"* ]]; then
-    TEMP="$(grep -i log_file $CONFIG_FILE | sed 's/.* = //')"
+    TEMP="$(grep -i LOG_FILE $CONFIG_FILE | sed 's/.* = //')"
     [ ! -z "$TEMP" ] && LOG_FILE="$TEMP"
 fi
 if [[ "$args" != *" -y"* ]]; then
-    TEMP="$(grep -i prompt_before_deploy $CONFIG_FILE | sed 's/.* = //' | tr '[:upper:]' '[:lower:]')"
+    TEMP="$(grep -i PROMPT_BEFORE_DEPLOY $CONFIG_FILE | sed 's/.* = //' | tr '[:upper:]' '[:lower:]')"
     [ ! -z "$TEMP" ] && PROMPT="$TEMP"
 fi
 if [[ -z "$AWS_PROFILE" ]]; then
-    AWS_PROFILE=$(grep -i aws_profile $CONFIG_FILE | sed 's/.* = //')
+    AWS_PROFILE="$(grep -i AWS_PROFILE $CONFIG_FILE | sed 's/.* = //')"
     if [[ -z "$AWS_PROFILE" ]]; then
         echo "Please set the environment variable AWS_PROFILE or define it in $CONFIG_FILE"
         echo "    e.g. export AWS_PROFILE=\"my_profile_name\""
@@ -83,7 +83,7 @@ if [[ -z "$AWS_PROFILE" ]]; then
     fi
 fi
 if [[ -z "$AWS_REGION" ]]; then
-    AWS_REGION=$(grep -i aws_region $CONFIG_FILE | sed 's/.* = //')
+    AWS_REGION="$(grep -i AWS_REGION $CONFIG_FILE | sed 's/.* = //')"
     if [[ -z "$AWS_REGION" ]]; then
       echo "Please set AWS_REGION as an environment variable or define it in $CONFIG_FILE"
     fi
