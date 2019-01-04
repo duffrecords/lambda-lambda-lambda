@@ -1,7 +1,11 @@
 [aws]
-aws_profile = 
-aws_region = 
-aws_access_key_id = 
-aws_secret_access_key = 
-deployment_bucket = 
+aws_profile = myprofile
+aws_region = us-east-1
+aws_access_key_id = MYACCESSKEYID
+aws_secret_access_key = MyS3cr3tAcc3ssK3y
+deployment_bucket = my-bucket
 
+[github]
+git_email = name@example.com
+git_token = 1234567890
+git_username = myusername
