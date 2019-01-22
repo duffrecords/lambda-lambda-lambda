@@ -263,6 +263,7 @@ def lambda_handler(event, context):
                 layer_versions.append(layer_version_arn)
 
         if layer_versions:
+            print('updating function with the following layers:\n  {}'.format('\n  '.join(layer_versions)))
             response = lambda_client.update_function_configuration(
                     FunctionName=function,
                     Layers=layer_versions
