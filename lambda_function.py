@@ -276,11 +276,11 @@ def lambda_handler(event, context):
                 dst = os.path.join(f'/tmp/build', file)
                 try:
                     copytree(src, dst)
-                except OSError as e:
+                except (OSError, FileNotFoundError) as e:
                     if e.errno == errno.ENOTDIR:
                         copy(src, dst)
                     else:
-                        print(f'{file} not copied. Error: {e}')
+                        print(f'{file} not copied. Error:\n{e}')
             remove_empty_dirs('/tmp/build/python')
             archive = '/tmp/lambda_function.zip'
             zipdir('/tmp/build', archive)
