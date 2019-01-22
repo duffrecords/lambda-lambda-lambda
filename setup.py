@@ -23,7 +23,7 @@ configparser.read('config.ini')
 aws_profile = configparser.get('aws', 'aws_profile')
 os.environ['AWS_PROFILE'] = aws_profile
 try:
-    region = configparser.get('aws', 'foo')
+    region = configparser.get('aws', 'aws_region')
 except NoOptionError:
     region = ''
 try:
@@ -47,7 +47,7 @@ if not bucket:
     sys.exit('Please specify an S3 bucket in config.ini or with the --bucket argument.')
 if args.region:
     region = args.region
-else:
+elif not region:
     session = boto3.session.Session()
     region = session.region_name
 iam_client = boto3.client('iam')
