@@ -15,13 +15,13 @@ At this point, you may be struck by the irony of maintaining a bunch of convolut
 1. Create an S3 bucket to store deployments, if you don't already have one.
 1. Create a personal access token on GitHub.  See [this guide](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/) for instructions.
 1. Copy config.ini.example to config.ini and add your AWS account info.
-1. Run `setup.py init`.  This script will do the following:
+1. Run `setup.py --init`.  This script will do the following:
     * Create the Lambda function if it does not yet exist.
     * Package the latest boto3 (at the time of this writing, the version in AWS Lambda does not support layers).
     * Package an empty placeholder module for Dulwich and PyYAML.  This is to avoid `ModuleNotFoundError` when bootstrapping the function for the first time.
     * Publish these artifacts as a layer, and update the Lambda function with the new layer information.
     * Invoke the Lambda function, causing it to install Dulwich and PyYAML natively within the Lambda environment, republish that layer, and then update itself.
-The Lambda function is now ready to build and deploy other Lambda functions.  If you need to update the lambda-lambda-lambda code, simply run `setup.py` again--it's idempotent.  The `init` parameter is only necessary to bootstrap the function with a newer boto3 and the placeholder modules.
+The Lambda function is now ready to build and deploy other Lambda functions.  If you need to update the lambda-lambda-lambda code, simply run `setup.py` again--it's idempotent.  The `--init` parameter is only necessary to bootstrap the function with a newer boto3 and the placeholder modules.
 
 ### Usage
 To build and deploy your own Lambda projects:
