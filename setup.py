@@ -23,9 +23,9 @@ configparser.read('config.ini')
 aws_profile = configparser.get('aws', 'aws_profile')
 os.environ['AWS_PROFILE'] = aws_profile
 try:
-    aws_region = configparser.get('aws', 'foo')
+    region = configparser.get('aws', 'foo')
 except NoOptionError:
-    aws_region = ''
+    region = ''
 try:
     bucket = configparser.get('aws', 'deployment_bucket')
 except NoOptionError:

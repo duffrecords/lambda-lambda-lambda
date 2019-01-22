@@ -63,11 +63,11 @@ def zipdir(path, package):
     """Recursively archives a folder"""
     print(f'archiving contents of {path} into {package}')
     for item in os.listdir(path):
-        print(f'\t{item}')
+        print(f'  {item}')
         subdir = os.path.join(path, item)
         if os.path.isdir(subdir):
             for file in os.listdir(subdir):
-                print(f'\t\t{file}')
+                print(f'    {file}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
