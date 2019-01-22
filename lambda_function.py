@@ -158,7 +158,7 @@ def lambda_handler(event, context):
             porcelain.pull(f'/tmp/{repo_name}', github_url, refspecs=[refspec])
             branch = refspec = ''
         print(os.listdir(task_root))
-        print(f'/tmp/{repo_name}')
+        print(os.listdir(f'/tmp/{repo_name}'))
         build_file = event.get('build_file', 'build.yaml')
         if build_file.endswith('.yaml'):
             from yaml import load
