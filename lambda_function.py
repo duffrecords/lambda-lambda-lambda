@@ -61,9 +61,13 @@ def remove_empty_dirs(dirs):
 
 def zipdir(path, package):
     """Recursively archives a folder"""
-    print(f'contents of {path}:')
-    for file in os.listdir(path):
-        print(f'\t{file}')
+    print(f'archiving contents of {path} into {package}')
+    for item in os.listdir(path):
+        print(f'\t{item}')
+        subdir = os.path.join(path, item)
+        if os.path.isdir(subdir):
+            for file in os.listdir(subdir):
+                print(f'\t\t{file}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
@@ -74,7 +78,6 @@ def zipdir(path, package):
 
 def publish_layer(function, layer, desc='', runtimes=[], license=''):
     """Publishes contents of build directory as a Lambda layer"""
-    print('archiving package...')
     remove_empty_dirs('/tmp/build/python')
     if layer == 'dependencies':
         layer_name = f'{function}-dependencies'
@@ -278,7 +281,6 @@ def lambda_handler(event, context):
                     else:
                         print(f'{file} not copied. Error: {e}')
             remove_empty_dirs('/tmp/build/python')
-            print('archiving package...')
             archive = '/tmp/lambda_function.zip'
             zipdir('/tmp/build', archive)
             print('uploading package to S3...')
