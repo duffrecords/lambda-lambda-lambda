@@ -166,6 +166,7 @@ def lambda_handler(event, context):
                 build_config = json.loads(f.read())
         layers = build_config.get('layers', {})
 
+        # package dependencies layer
         if components == ['all'] or 'dependencies' in components:
             clean_build_dir()
             for dependency_file in layers.get('dependencies', []):
@@ -217,6 +218,7 @@ def lambda_handler(event, context):
                 return {'statusCode': 500, 'body': 'Failed to publish layer'}
             layer_versions.append(layer_version_arn)
 
+        # package user-defined layers
         if components == ['all'] or any(c not in ['function', 'dependencies', 'all'] for c in components):
             clean_build_dir()
             for layer, attr in layers.items():
@@ -230,20 +232,22 @@ def lambda_handler(event, context):
                             shell(f'source /tmp/{repo_name}/venv/bin/activate; {command}; deactivate')
                         else:
                             shell(f'bash {command}')
-                os.chdir(f'/tmp/{repo_name}')
+                source_dir = attr.get('source_dir', '')
                 for file in attr.get('files', []):
+                    src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
+                    dst = os.path.join(f'/tmp/build', file)
                     try:
-                        copytree(file, f'/tmp/build/{file}')
+                        copytree(src, dst)
                     except OSError as e:
                         if e.errno == errno.ENOTDIR:
-                            copy(file, f'/tmp/build/{file}')
+                            copy(src, dst)
                         else:
                             print('not copied. Error: %s' % e)
                 layer_version_arn = publish_layer(
                     function,
                     layer,
-                    runtimes=build_config['function'].get('runtimes', []),
-                    license=build_config['function'].get('license', [])
+                    runtimes=attr.get('runtimes', []),
+                    license=attr.get('license', [])
                 )
                 if not layer_version_arn:
                     return {'statusCode': 500, 'body': 'Failed to publish layer'}
@@ -257,16 +261,20 @@ def lambda_handler(event, context):
             if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
                 return {'statusCode': 500, 'body': 'Failed to update function configuration'}
 
+        # package main function code
         if components == ['all'] or 'function' in components:
             print(f"building {function} package")
             clean_build_dir()
             # shell(f"bash {task_root}/build_package.sh {repo_name}")
+            source_dir = build_config['function'].get('source_dir', '')
             for file in build_config['function']['files']:
+                src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
+                dst = os.path.join(f'/tmp/build', file)
                 try:
-                    copytree(f'/tmp/{repo_name}/{file}', f'/tmp/build/{file}')
+                    copytree(src, dst)
                 except OSError as e:
                     if e.errno == errno.ENOTDIR:
-                        copy(f'/tmp/{repo_name}/{file}', f'/tmp/build/{file}')
+                        copy(src, dst)
                     else:
                         print(f'{file} not copied. Error: {e}')
             remove_empty_dirs('/tmp/build/python')
