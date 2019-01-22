@@ -62,12 +62,16 @@ def remove_empty_dirs(dirs):
 def zipdir(path, package):
     """Recursively archives a folder"""
     print(f'archiving contents of {path} into {package}')
-    for item in os.listdir(path):
-        print(f'  {item}')
+    path_contents = os.listdir(path)
+    for i, item in enumerate(path_contents):
+        box_char = '└' if i == len(path_contents) - 1 else '├'
+        print(f' {box_char}{item}')
         subdir = os.path.join(path, item)
         if os.path.isdir(subdir):
-            for file in os.listdir(subdir):
-                print(f'    {file}')
+            subdir_contents = os.listdir(subdir)
+            for j, file in enumerate(subdir_contents):
+                box_char = '└' if j == len(subdir_contents) - 1 else '├'
+                print(f'   {box_char}{file}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
@@ -239,14 +243,12 @@ def lambda_handler(event, context):
                 source_dir = attr.get('source_dir', '')
                 for file in attr.get('files', []):
                     src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
-                    dst = os.path.join(f'/tmp/build', file)
-                    try:
+                    if os.path.isdir(src):
+                        dst = os.path.join(f'/tmp/build', file)
                         copytree(src, dst)
-                    except OSError as e:
-                        if e.errno == errno.ENOTDIR:
-                            copy(src, dst)
-                        else:
-                            print('not copied. Error: %s' % e)
+                    else:
+                        dst = f'/tmp/build/'
+                        copy(src, dst)
                 layer_version_arn = publish_layer(
                     function,
                     layer,
@@ -279,14 +281,6 @@ def lambda_handler(event, context):
                 else:
                     dst = f'/tmp/build/'
                     copy(src, dst)
-                # print(f'{file}\t{src}\t{dst}')
-                # try:
-                #     copytree(src, dst)
-                # except OSError as e:
-                #     if e.errno == errno.ENOTDIR:
-                #         copy(src, dst)
-                #     else:
-                #         print(f'{file} not copied. Error:\n{e}')
             remove_empty_dirs('/tmp/build/python')
             archive = '/tmp/lambda_function.zip'
             zipdir('/tmp/build', archive)
