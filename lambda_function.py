@@ -65,13 +65,13 @@ def zipdir(path, package):
     path_contents = os.listdir(path)
     for i, item in enumerate(path_contents):
         box_char = '└' if i == len(path_contents) - 1 else '├'
-        print(f' {box_char}{item}')
+        print(f'{box_char} {item}')
         subdir = os.path.join(path, item)
         if os.path.isdir(subdir):
             subdir_contents = os.listdir(subdir)
             for j, file in enumerate(subdir_contents):
                 box_char = '└' if j == len(subdir_contents) - 1 else '├'
-                print(f'   {box_char}{file}')
+                print(f'  {box_char} {file}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
