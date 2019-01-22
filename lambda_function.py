@@ -273,16 +273,20 @@ def lambda_handler(event, context):
             source_dir = build_config['function'].get('source_dir', '')
             for file in build_config['function']['files']:
                 src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
-                # dst = os.path.join(f'/tmp/build', file)
-                dst = f'/tmp/build/'
-                print(f'{file}\t{src}\t{dst}')
-                try:
+                if os.path.isdir(src):
+                    dst = os.path.join(f'/tmp/build', file)
                     copytree(src, dst)
-                except (OSError, FileNotFoundError) as e:
-                    if e.errno == errno.ENOTDIR:
-                        copy(src, dst)
-                    else:
-                        print(f'{file} not copied. Error:\n{e}')
+                else:
+                    dst = f'/tmp/build/'
+                    copy(src, dst)
+                # print(f'{file}\t{src}\t{dst}')
+                # try:
+                #     copytree(src, dst)
+                # except OSError as e:
+                #     if e.errno == errno.ENOTDIR:
+                #         copy(src, dst)
+                #     else:
+                #         print(f'{file} not copied. Error:\n{e}')
             remove_empty_dirs('/tmp/build/python')
             archive = '/tmp/lambda_function.zip'
             zipdir('/tmp/build', archive)
