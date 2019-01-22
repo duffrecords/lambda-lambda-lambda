@@ -8,7 +8,7 @@ import os
 import sys
 import zipfile
 from base64 import b64decode
-from configparser import ConfigParser
+from configparser import ConfigParser, NoOptionError
 from distutils.version import LooseVersion
 from pip._internal import main as pip
 from shutil import rmtree
@@ -20,17 +20,31 @@ deploy_files = ["build_package.sh", "install_requirements.sh", "lambda_function.
 
 configparser = ConfigParser()
 configparser.read('config.ini')
+aws_profile = configparser.get('aws', 'aws_profile')
+os.environ['AWS_PROFILE'] = aws_profile
+try:
+    aws_region = configparser.get('aws', 'foo')
+except NoOptionError:
+    aws_region = ''
+try:
+    bucket = configparser.get('aws', 'deployment_bucket')
+except NoOptionError:
+    bucket = ''
 git_email = configparser.get('github', 'git_email')
 git_token = configparser.get('github', 'git_token')
 git_username = configparser.get('github', 'git_username')
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--init', action='store_true', help='')
-parser.add_argument('--bucket', required=True, help='S3 bucket for storing deployment packages')
+parser.add_argument('--bucket', help='S3 bucket for storing deployment packages')
 parser.add_argument('--function', default='lambda-lambda-lambda', help='name of Lambda function')
 parser.add_argument('--region', help='AWS region in which Lambda function is located')
 args = parser.parse_args()
 
+if args.bucket:
+    bucket = args.bucket
+if not bucket:
+    sys.exit('Please specify an S3 bucket in config.ini or with the --bucket argument.')
 if args.region:
     region = args.region
 else:
@@ -47,7 +61,7 @@ with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED) as f:
         f.write(file)
 
 print('uploading deployment package to S3')
-s3_client.upload_file(package, args.bucket, f'{args.function}/{package}')
+s3_client.upload_file(package, bucket, f'{args.function}/{package}')
 
 policy_document = {
     "Version": "2012-10-17",
@@ -94,7 +108,7 @@ if function_exists:
     print(f'updating {args.function} with latest code')
     response = lambda_client.update_function_code(
         FunctionName=args.function,
-        S3Bucket=args.bucket,
+        S3Bucket=bucket,
         S3Key=f'{args.function}/{package}'
     )
 else:
@@ -105,7 +119,7 @@ else:
         Role=role['Role']['Arn'],
         Handler='lambda_function.lambda_handler',
         Code={
-            'S3Bucket': args.bucket,
+            'S3Bucket': bucket,
             'S3Key': f'{args.function}/{package}'
         },
         Description='a Lambda function that can build and deploy other Lambda functions',
@@ -113,7 +127,7 @@ else:
         MemorySize=2048,
         Environment={
             'Variables': {
-                'deploy_bucket': args.bucket,
+                'deploy_bucket': bucket,
                 'git_email': git_email,
                 'git_token': git_token,
                 'git_username': git_username
