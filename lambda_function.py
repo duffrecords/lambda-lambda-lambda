@@ -64,15 +64,17 @@ def zipdir(path, package):
     print(f'archiving contents of {path} into {package}')
     path_contents = os.listdir(path)
     for i, item in enumerate(path_contents):
-        box_char = '└' if i == len(path_contents) - 1 else '├'
-        print(f'{box_char} {item}')
+        box_char = '└─' if i == len(path_contents) - 1 else '├─'
+        trailing_slash = '/' if os.path.isdir(item) else ''
+        print(f'{box_char} {item}{trailing_slash}')
         subdir = os.path.join(path, item)
         if os.path.isdir(subdir):
             subdir_contents = os.listdir(subdir)
             for j, file in enumerate(subdir_contents):
-                box_char = '└' if j == len(subdir_contents) - 1 else '├'
+                box_char = '└─' if j == len(subdir_contents) - 1 else '├─'
                 line_char = ' ' if i == len(path_contents) - 1 else '│'
-                print(f'{line_char} {box_char} {file}')
+                trailing_slash = '/' if os.path.isdir(file) else ''
+                print(f'{line_char}  {box_char} {file}{trailing_slash}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
