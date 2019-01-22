@@ -273,7 +273,9 @@ def lambda_handler(event, context):
             source_dir = build_config['function'].get('source_dir', '')
             for file in build_config['function']['files']:
                 src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
-                dst = os.path.join(f'/tmp/build', file)
+                # dst = os.path.join(f'/tmp/build', file)
+                dst = f'/tmp/build/'
+                print(f'{file}\t{src}\t{dst}')
                 try:
                     copytree(src, dst)
                 except (OSError, FileNotFoundError) as e:
