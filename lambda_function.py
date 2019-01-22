@@ -71,7 +71,8 @@ def zipdir(path, package):
             subdir_contents = os.listdir(subdir)
             for j, file in enumerate(subdir_contents):
                 box_char = '└' if j == len(subdir_contents) - 1 else '├'
-                print(f'  {box_char} {file}')
+                line_char = '│' if j == len(path_contents) - 1 else ' '
+                print(f'{line_char} {box_char} {file}')
     with zipfile.ZipFile(package, mode='w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as f:
         length = len(path)
         for root, dirs, files in os.walk(path):
