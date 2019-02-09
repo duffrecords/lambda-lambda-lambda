@@ -113,6 +113,7 @@ def publish_layer(function, layer, desc='', runtimes=[], license=''):
 
 
 def updated_layers(new_layers):
+    print(f'new_layers: {new_layers}')
     new_layer_names = [arn.split(':')[-2] for arn in new_layers]
     response = lambda_client.get_function_configuration(FunctionName='string')
     existing_layers = [l['Arn'] for l in response.get('Layers', []) if not any(n in l['Arn'] for n in new_layer_names)]
