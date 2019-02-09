@@ -113,7 +113,6 @@ def publish_layer(function, layer, desc='', runtimes=[], license=''):
 
 
 def updated_layers(new_layers):
-    print(f'new_layers: {new_layers}')
     new_layer_names = [arn.split(':')[-2] for arn in new_layers]
     response = lambda_client.get_function_configuration(FunctionName='string')
     existing_layers = [l['Arn'] for l in response.get('Layers', []) if not any(n in l['Arn'] for n in new_layer_names)]
@@ -147,7 +146,7 @@ def lambda_handler(event, context):
             return {'statusCode': 500, 'body': 'Failed to publish layer'}
         response = lambda_client.update_function_configuration(
                 FunctionName=function,
-                Layers=updated_layers(layer_version_arn)
+                Layers=updated_layers([layer_version_arn])
         )
         if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
             return {'statusCode': 500, 'body': 'Failed to update function configuration'}
