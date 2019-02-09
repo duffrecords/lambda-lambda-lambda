@@ -13,7 +13,7 @@ lambda_client = boto3.client('lambda', region_name=os.environ['AWS_REGION'])
 bucket = os.environ['deploy_bucket']
 task_root = os.environ['LAMBDA_TASK_ROOT']
 runtime = os.environ['AWS_EXECUTION_ENV'].replace('AWS_Lambda_', '')
-git_url_regex = re.compile(r'\w+\+(\w+:\/\/[\w\.]+\/[\w\-]+\/[\w\-]+)(@[\w\-]+|)(#egg=.*|)')
+git_url_regex = re.compile(r'\w+\+(\w+:\/\/[\w\.]+\/[\w\-]+\/[\w\-\.]+)@?((?<=@)[\w\-]+|)(#egg=.*|)')
 
 layer_descriptions = {
     'function': 'Lambda function code',
@@ -193,7 +193,10 @@ def lambda_handler(event, context):
                     if match and match.group(1):
                         repo_url = match.group(1).rstrip('.git') + '.git'
                         branch = match.group(2).lstrip('@')
-                        module_name = match.group(3).lstrip('#egg=').lower()
+                        if match.group(3):
+                            module_name = match.group(3).lstrip('#egg=').lower()
+                        else:
+                            module_name = repo_url.split('/')[-1]
                     else:
                         print(f'could not parse {repo_url}')
                         continue
@@ -215,9 +218,7 @@ def lambda_handler(event, context):
                     print('copying {} to {}'.format(src_dir, f'/tmp/build/python/{module_name}'))
                     try:
                         copytree(src_dir, f'/tmp/build/python/{module_name}')
-                    except Error as e:
-                        print('Directory not copied. Error: %s' % e)
-                    except OSError as e:
+                    except (Error, OSError) as e:
                         print('Directory not copied. Error: %s' % e)
             layer_version_arn = publish_layer(
                 function,
