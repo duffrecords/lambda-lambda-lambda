@@ -112,6 +112,17 @@ def publish_layer(function, layer, desc='', runtimes=[], license=''):
     return response['LayerVersionArn']
 
 
+def updated_layers(new_layers):
+    new_layer_names = [arn.split(':')[-2] for arn in new_layers]
+    response = lambda_client.get_function_configuration(FunctionName='string')
+    existing_layers = [l['Arn'] for l in response.get('Layers', []) if not any(n in l['Arn'] for n in new_layer_names)]
+    # TO DO: decide on a reasonable merge order strategy
+    if existing_layers:
+        return new_layers + existing_layers
+    else:
+        return new_layers
+
+
 def lambda_handler(event, context):
     print('event: {}'.format(event))
     function = event['function']
@@ -135,7 +146,7 @@ def lambda_handler(event, context):
             return {'statusCode': 500, 'body': 'Failed to publish layer'}
         response = lambda_client.update_function_configuration(
                 FunctionName=function,
-                Layers=[layer_version_arn]
+                Layers=updated_layers(layer_version_arn)
         )
         if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
             return {'statusCode': 500, 'body': 'Failed to update function configuration'}
@@ -271,7 +282,7 @@ def lambda_handler(event, context):
             print('updating function with the following layers:\n  {}'.format('\n  '.join(layer_versions)))
             response = lambda_client.update_function_configuration(
                     FunctionName=function,
-                    Layers=layer_versions
+                    Layers=updated_layers(layer_versions)
             )
             if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
                 return {'statusCode': 500, 'body': 'Failed to update function configuration'}
