@@ -194,9 +194,12 @@ def lambda_handler(event, context):
                         repo_url = match.group(1).rstrip('.git') + '.git'
                         branch = match.group(2).lstrip('@')
                         if match.group(3):
-                            module_name = match.group(3).lstrip('#egg=').lower()
+                            egg_name = match.group(3).lstrip('#egg=').replace('-', '_')
+                            module_name = egg_name.lower().replace('_', '-')
+                            module_dirs = [egg_name.lower(), f'{egg_name}.egg-info']
                         else:
                             module_name = repo_url.split('/')[-1]
+                            module_dirs = [module_name.replace('-', '_')]
                     else:
                         print(f'could not parse {repo_url}')
                         continue
@@ -215,11 +218,12 @@ def lambda_handler(event, context):
                     if branch:
                         refspec = f'refs/heads/{branch}'.encode()
                         porcelain.pull(src_dir, repo_url, refspecs=[refspec])
-                    print('copying {} to {}'.format(src_dir, f'/tmp/build/python/{module_name}'))
-                    try:
-                        copytree(src_dir, f'/tmp/build/python/{module_name}')
-                    except (Error, OSError) as e:
-                        print('Directory not copied. Error: %s' % e)
+                    for module_dir in module_dirs:
+                        print('copying {} to {}'.format(f'{src_dir}/{module_dir}', f'/tmp/build/python/{module_dir}'))
+                        try:
+                            copytree(f'{src_dir}/{module_dir}', f'/tmp/build/python/{module_dir}')
+                        except (Error, OSError) as e:
+                            print('Directory not copied. Error: %s' % e)
             layer_version_arn = publish_layer(
                 function,
                 'dependencies',
