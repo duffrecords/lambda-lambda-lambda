@@ -260,13 +260,16 @@ def lambda_handler(event, context):
                         else:
                             shell(f'bash {command}')
                 source_dir = attr.get('source_dir', '')
+                dest_dir = attr.get('dest_dir', '')
+                if not os.path.isdir(os.path.join(f'/tmp/{repo_name}', dest_dir)):
+                    os.mkdir(os.path.join(f'/tmp/{repo_name}', dest_dir))
                 for file in attr.get('files', []):
                     src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
                     if os.path.isdir(src):
-                        dst = os.path.join(f'/tmp/build', file)
+                        dst = os.path.join(f'/tmp/build', dest_dir, file)
                         copytree(src, dst)
                     else:
-                        dst = f'/tmp/build/'
+                        dst = os.oath.join(f'/tmp/build/', dest_dir)
                         copy(src, dst)
                 layer_version_arn = publish_layer(
                     function,
