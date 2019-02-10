@@ -251,10 +251,12 @@ def lambda_handler(event, context):
             for layer, attr in layers.items():
                 if layer in ['function', 'dependencies', 'all']:
                     continue
+                print(f'building {layer} layer')
                 commands = attr.get('preinstall', [])
                 if commands:
                     os.chdir(f'/tmp/{repo_name}')
                     for command in commands:
+                        print(command)
                         if any(command.startswith(p) for p in ['python', 'pip']):
                             shell(f'source /tmp/{repo_name}/venv/bin/activate; {command}; deactivate')
                         else:
@@ -267,9 +269,11 @@ def lambda_handler(event, context):
                     src = os.path.join(f'/tmp/{repo_name}', source_dir, file)
                     if os.path.isdir(src):
                         dst = os.path.join(f'/tmp/build', dest_dir, file)
+                        print('copying {} to {}'.format(src, dst))
                         copytree(src, dst)
                     else:
                         dst = os.path.join(f'/tmp/build/', dest_dir)
+                        print('copying {} to {}'.format(src, dst))
                         copy(src, dst)
                 layer_version_arn = publish_layer(
                     function,
