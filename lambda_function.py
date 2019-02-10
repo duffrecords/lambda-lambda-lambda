@@ -269,7 +269,7 @@ def lambda_handler(event, context):
                         dst = os.path.join(f'/tmp/build', dest_dir, file)
                         copytree(src, dst)
                     else:
-                        dst = os.oath.join(f'/tmp/build/', dest_dir)
+                        dst = os.path.join(f'/tmp/build/', dest_dir)
                         copy(src, dst)
                 layer_version_arn = publish_layer(
                     function,
