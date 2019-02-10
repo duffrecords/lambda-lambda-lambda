@@ -261,6 +261,7 @@ def lambda_handler(event, context):
                             shell(f'source /tmp/{repo_name}/venv/bin/activate; {command}; deactivate')
                         else:
                             shell(f'bash {command}')
+                print('{}:\n{}'.format(repo_name, os.listdir(f'/tmp/{repo_name}')))
                 source_dir = attr.get('source_dir', '')
                 dest_dir = attr.get('dest_dir', '')
                 if not os.path.isdir(os.path.join(f'/tmp/{repo_name}', dest_dir)):
