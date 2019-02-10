@@ -260,7 +260,7 @@ def lambda_handler(event, context):
                         if any(command.startswith(p) for p in ['python', 'pip']):
                             shell(f'source /tmp/{repo_name}/venv/bin/activate; {command}; deactivate')
                         else:
-                            shell(f'bash {command}')
+                            shell(f'bash -c "{command}"')
                 print('{}:\n{}'.format(repo_name, os.listdir(f'/tmp/{repo_name}')))
                 source_dir = attr.get('source_dir', '')
                 dest_dir = attr.get('dest_dir', '')
