@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # default values
+ALIAS=""
 CONFIG_FILE="config.ini"
 BRANCH="master"
 SOURCE="${BASH_SOURCE[0]}"
@@ -14,10 +15,10 @@ REPO="$FUNCTION"
 LOG_FILE="deploy.log"
 PROMPT=true
 TIME=
-VERSION=
+VERSION=false
 
 usage() {
-    echo "Usage: $0 [ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -v \"version description\" ][ -y ] [function|dependencieslayer]" 1>&2
+    echo "Usage: $0 [ -a ALIAS ][ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -v ][ -y ] [function|dependencieslayer]" 1>&2
 }
 
 exit_abnormal() {
@@ -31,6 +32,8 @@ args=$(getopt b:c:f:g:l:p:r:ty $* > /dev/null 2>&1)
 eval set -- "$args"
 while true; do
     case "$1" in
+        -a)
+            ALIAS=", \"alias\": \"$2\""; shift 2 ;;
         -b)
             BRANCH=$2; shift 2 ;;
         -c)
@@ -48,7 +51,7 @@ while true; do
         -t)
             TIME="time"; shift ;;
         -v)
-            VERSION=", \"version\": \"$2\""; shift 2 ;;
+            VERSION=", \"version\": \"true\""; shift ;;
         -y)
             PROMPT=false; shift ;;
         --) shift; break;;
@@ -57,6 +60,10 @@ while true; do
 done
 
 # override default parameters, using config file
+if [[ "$args" != *" -a"* ]]; then
+    TEMP="$(grep -i ALIAS $CONFIG_FILE | sed 's/.* = //')"
+    [ ! -z "$TEMP" ] && ALIAS=", \"alias\": \"$TEMP\""
+fi
 if [[ "$args" != *" -f"* ]]; then
     TEMP="$(grep -i FUNCTION_NAME $CONFIG_FILE | sed 's/.* = //')"
     [ ! -z "$TEMP" ] && FUNCTION="$TEMP"
@@ -134,6 +141,6 @@ $TIME aws lambda invoke \
     --function-name lambda-lambda-lambda \
     --region $AWS_REGION \
     --log-type Tail \
-    --payload "{\"action\": \"${ACTION}\", \"branch\": \"${BRANCH}\", \"function\": \"${FUNCTION}\", \"repo_name\": \"${REPO}\"${VERSION}}" \
+    --payload "{\"action\": \"${ACTION}\", \"branch\": \"${BRANCH}\", \"function\": \"${FUNCTION}\", \"repo_name\": \"${REPO}\"${VERSION}${ALIAS}}" \
     --profile $AWS_PROFILE \
     $LOG_FILE | eval $JQ | eval $B64
