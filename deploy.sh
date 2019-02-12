@@ -27,7 +27,7 @@ exit_abnormal() {
 }
 
 # parse command line arguments
-args=$(getopt b:c:f:g:l:p:r:ty $* > /dev/null 2>&1)
+args=$(getopt a:b:c:f:g:l:p:r:tvy $* > /dev/null 2>&1)
 [ $? -ne 0 ] && exit_abnormal
 eval set -- "$args"
 while true; do
