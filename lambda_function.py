@@ -323,5 +323,16 @@ def lambda_handler(event, context):
             )
             if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
                 return {'statusCode': 500, 'body': 'Failed to update Lambda function code'}
+            if event.get('version', ''):
+                checksum = response['CodeSha256']
+                response = lambda_client.publish_version(
+                    FunctionName=function,
+                    CodeSha256=checksum,
+                    Description=event['version']
+                )
+                if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
+                    return {'statusCode': 500, 'body': 'Failed to update Lambda function version'}
+                else:
+                    print('updated Lambda function version to {}'.format(response['Version']))
 
         return {'statusCode': 200, 'body': 'Success'}

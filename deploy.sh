@@ -14,9 +14,10 @@ REPO="$FUNCTION"
 LOG_FILE="deploy.log"
 PROMPT=true
 TIME=
+VERSION=
 
 usage() {
-    echo "Usage: $0 [ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -y ] [function|dependencieslayer]" 1>&2
+    echo "Usage: $0 [ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -v \"version description\" ][ -y ] [function|dependencieslayer]" 1>&2
 }
 
 exit_abnormal() {
@@ -46,6 +47,8 @@ while true; do
             AWS_REGION=$2; shift 2 ;;
         -t)
             TIME="time"; shift ;;
+        -v)
+            VERSION=", \"version\": \"$2\""; shift 2 ;;
         -y)
             PROMPT=false; shift ;;
         --) shift; break;;
@@ -131,6 +134,6 @@ $TIME aws lambda invoke \
     --function-name lambda-lambda-lambda \
     --region $AWS_REGION \
     --log-type Tail \
-    --payload "{\"action\": \"${ACTION}\", \"branch\": \"${BRANCH}\", \"function\": \"${FUNCTION}\", \"repo_name\": \"${REPO}\"}" \
+    --payload "{\"action\": \"${ACTION}\", \"branch\": \"${BRANCH}\", \"function\": \"${FUNCTION}\", \"repo_name\": \"${REPO}\"${VERSION}}" \
     --profile $AWS_PROFILE \
     $LOG_FILE | eval $JQ | eval $B64
