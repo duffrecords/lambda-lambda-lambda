@@ -19,7 +19,7 @@ REPO="$FUNCTION"
 LOG_FILE="deploy.log"
 PROMPT=true
 TIME=
-VERSION=false
+VERSION=
 
 usage() {
     echo "Usage: $0 [ -a ALIAS ][ -b GIT_BRANCH ] [ -c CONFIG_FILE ] [ -f FUNCTION_NAME ] [ -g GIT_REPO ] [ -l LOG_FILE] [ -p AWS_PROFILE ] [ -r AWS_REGION ] [ -t ] [ -v ][ -y ] [function|dependencieslayer]" 1>&2
@@ -31,13 +31,13 @@ exit_abnormal() {
 }
 
 # parse command line arguments
-args=$(getopt a:b:c:f:g:l:p:r:tvy $* > /dev/null 2>&1)
+args=$(getopt a:b:c:f:g:l:p:r:tvy $*)
 [ $? -ne 0 ] && exit_abnormal
 eval set -- "$args"
 while true; do
     case "$1" in
         -a)
-            ALIAS=", \"alias\": \"$2\""; shift 2 ;;
+            ALIAS="$2"; shift 2 ;;
         -b)
             BRANCH=$2; shift 2 ;;
         -c)
@@ -66,7 +66,7 @@ done
 # override default parameters, using config file
 if [[ "$args" != *" -a"* ]]; then
     TEMP="$(grep -i ALIAS $CONFIG_FILE | sed 's/.* = //')"
-    [ ! -z "$TEMP" ] && ALIAS=", \"alias\": \"$TEMP\""
+    [ ! -z "$TEMP" ] && ALIAS="$TEMP"
 fi
 if [[ "$args" != *" -f"* ]]; then
     TEMP="$(grep -i FUNCTION_NAME $CONFIG_FILE | sed 's/.* = //')"
@@ -113,6 +113,10 @@ else
 fi
 echo -e "The following will be built and deployed:\n"
 echo "      LAYERS $LAYERS"
+if [ ! -z "$ALIAS" ]; then
+    echo "       ALIAS $ALIAS"
+    ALIAS=", \"alias\": \"$ALIAS\""
+fi
 echo "      SOURCE ${REPO}:${BRANCH}"
 echo " DESTINATION arn:aws:lambda:${AWS_REGION}:${AWS_PROFILE}:function:${FUNCTION}"
 if [[ "$PROMPT" == "true" ]]; then
@@ -120,6 +124,7 @@ if [[ "$PROMPT" == "true" ]]; then
     read yn
     if [[ "$yn" != "y" ]]; then
         echo "Aborted"
+        exit
     fi
 fi
 

@@ -344,7 +344,7 @@ def lambda_handler(event, context):
                 except lambda_client.exceptions.ResourceNotFoundException:
                     alias_exists = False
                 params = {'FunctionName': function, 'Name': event['alias']}
-                if response.get('Version', ''):
+                if event.get('version', False) == 'true':
                     params['FunctionVersion'] = response['Version']
                 if alias_exists:
                     action = 'update'
@@ -356,7 +356,7 @@ def lambda_handler(event, context):
                     return {'statusCode': 500, 'body': f'Failed to {action} Lambda function alias'}
                 else:
                     print('{}d alias "{}" to invoke version {}'.format(
-                        action.title(), response['Name'], response['FunctionVersion'])
+                        action, response['Name'], response['FunctionVersion'])
                     )
 
         return {'statusCode': 200, 'body': 'Success'}
