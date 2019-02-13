@@ -324,6 +324,7 @@ def lambda_handler(event, context):
             if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
                 return {'statusCode': 500, 'body': 'Failed to update Lambda function code'}
 
+            # update Lambda function version
             if event.get('version', False) == 'true':
                 checksum = response['CodeSha256']
                 response = lambda_client.publish_version(
@@ -335,14 +336,27 @@ def lambda_handler(event, context):
                 else:
                     print('updated Lambda function version to {}'.format(response['Version']))
 
+            # create or update Lambda function alias
             if event.get('alias', ''):
+                try:
+                    response = lambda_client.get_alias(FunctionName=function, Name=event['alias'])
+                    alias_exists = True
+                except lambda_client.exceptions.ResourceNotFoundException:
+                    alias_exists = False
                 params = {'FunctionName': function, 'Name': event['alias']}
                 if response.get('Version', ''):
                     params['FunctionVersion'] = response['Version']
-                response = lambda_client.update_alias(**params)
-                if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
-                    return {'statusCode': 500, 'body': 'Failed to update Lambda function alias'}
+                if alias_exists:
+                    action = 'update'
+                    response = lambda_client.update_alias(**params)
                 else:
-                    print('Updated alias "{}" to invoke version {}'.format(response['Name'], response['FunctionVersion']))
+                    action = 'create'
+                    response = lambda_client.create_alias(**params)
+                if response['ResponseMetadata']['HTTPStatusCode'] >= 400:
+                    return {'statusCode': 500, 'body': f'Failed to {action} Lambda function alias'}
+                else:
+                    print('{}d alias "{}" to invoke version {}'.format(
+                        action.title(), response['Name'], response['FunctionVersion'])
+                    )
 
         return {'statusCode': 200, 'body': 'Success'}
