@@ -30,14 +30,16 @@ To build and deploy your own Lambda projects:
 1. Edit `build.yaml.example` and specify any files or folders to be included in your deployment.  At the very minimum, this file must contain a `function` section that defines the runtime(s) and the path to the file that contains the handler function.  You can separate common code or infrequently-updated files in the `layers` section for faster deployments.
 1. Set the `AWS_PROFILE` and `AWS_REGION` environment variables or define them in `config.ini`.
 1. Run `./deploy.sh` to build and deploy your project.  The following command line arguments are available and can alternatively be set in `config.ini`:
+    * `-a ALIAS` create/update function alias
+    * `-b GIT_BRANCH` (defaults to `master`)
     * `-c CONFIG_FILE` (defaults to `config.ini`)
     * `-f FUNCTION_NAME` (defaults to the name of the project directory)
     * `-g GIT_REPO` (defaults to the name of the project directory)
     * `-l LOG_FILE` (defaults to `deploy.log`)
-    * `-b GIT_BRANCH` (defaults to `master`)
     * `-p AWS_PROFILE`
     * `-r AWS_REGION`
     * `-t` track the build/deploy execution time
+    * `-v` update function version (omitting this option will result in "$LATEST")
     * `-y` do not prompt before deploying
 
 The first time you build and deploy using this tool it may be relatively slow due to cold starts.  Once the function is warm it can build and deploy a function in as little as 2 seconds.
