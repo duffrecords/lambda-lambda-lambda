@@ -1,5 +1,9 @@
 #!/bin/bash
 
+PYENV_VERSION=
+VIRTUAL_ENV=
+PYENV_VIRTUAL_ENV=
+
 # default values
 ALIAS=""
 CONFIG_FILE="config.ini"
