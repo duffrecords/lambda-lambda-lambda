@@ -338,14 +338,14 @@ def lambda_handler(event, context):
 
             # create or update Lambda function alias
             if event.get('alias', ''):
+                params = {'FunctionName': function, 'Name': event['alias']}
+                if event.get('version', False) == 'true':
+                    params['FunctionVersion'] = response['Version']
                 try:
                     response = lambda_client.get_alias(FunctionName=function, Name=event['alias'])
                     alias_exists = True
                 except lambda_client.exceptions.ResourceNotFoundException:
                     alias_exists = False
-                params = {'FunctionName': function, 'Name': event['alias']}
-                if event.get('version', False) == 'true':
-                    params['FunctionVersion'] = response['Version']
                 if alias_exists:
                     action = 'update'
                     response = lambda_client.update_alias(**params)
